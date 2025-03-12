@@ -1,14 +1,8 @@
-main: main.o coroutine.o
-	ld -o main main.o coroutine.o /usr/lib/x86_64-linux-gnu/crt1.o -lc -dynamic-linker /lib64/ld-linux-x86-64.so.2
+main: main.c coroutine.o
+	gcc -Wall -Wextra -o main main.c coroutine.o
 
-coroutine.o: coroutine.asm
-	/home/linuxfish/bin/fasm coroutine.asm
-
-main_new: main_new.c coroutine_new.o
-	gcc -Wall -Wextra -ggdb -o main_new main_new.c coroutine_new.o
-
-coroutine_new.o: coroutine_new.asm
-	/home/linuxfish/bin/fasm coroutine_new.asm
+coroutine.o: coroutine.c
+	gcc -Wall -Wextra -c coroutine.c
 
 # prove of concept of the coroutine idea in assembly
 poc: poc.asm

@@ -36,8 +36,39 @@ typedef struct {
 
 Contexts contexts = {0};
 
-void coroutine_yield(void);
-void coroutine_restore_context(void *rsp);
+// when enter this procedure, rsp points at [ret address]
+// [ regs ][ret address]
+//         ^
+//         rsp
+void __attribute__((naked)) coroutine_yield(void)
+{
+  // save the registers on the stack
+  asm("pushq %rdi\n"
+      "pushq %rbx\n"
+      "pushq %rbp\n"
+      "pushq %r12\n"
+      "pushq %r13\n"
+      "pushq %r14\n"
+      "pushq %r15\n"
+      // prepare parameter for the function `coroutine_switch_context`
+      // save rsp to rdi for the c function to use
+      "movq %rsp, %rdi\n"
+      "jmp coroutine_switch_context\n");
+
+}
+void __attribute__((naked)) coroutine_restore_context(void *rsp)
+{
+  (void)rsp;
+  asm("movq %rdi, %rsp\n"
+      "popq %r15\n"
+      "popq %r14\n"
+      "popq %r13\n"
+      "popq %r12\n"
+      "popq %rbp\n"
+      "popq %rbx\n"
+      "popq %rdi\n"
+      "ret");
+}
 
 void coroutine_switch_context(void *rsp)
 {
@@ -65,7 +96,6 @@ void coroutine_finish(void)
   contexts.items[contexts.count-1] = t;
   contexts.count -= 1;
   contexts.current %= contexts.count;  // ??
-  /* printf("current: %ld, count: %ld\n", contexts.current, contexts.count); */
 
   coroutine_restore_context(contexts.items[contexts.current].rsp);
 }
@@ -83,38 +113,27 @@ void coroutine_go(void (*f)(void*), void *arg)
   // rsp
   // so that for the `coroutine_restore_context` assembly
   // procedure to run properly
-  *(--rsp) = coroutine_finish;
-  *(--rsp) = f;
-  *(--rsp) = arg;    // rdi, parameter for the function `f`
-  *(--rsp) = 0;      // rbx
-  *(--rsp) = 0;      // rbp
-  *(--rsp) = 0;      // r12
-  *(--rsp) = 0;      // r13
-  *(--rsp) = 0;      // r14
-  *(--rsp) = 0;      // r15
+  *(--rsp) = coroutine_finish;   // push coroutine_finish
+  *(--rsp) = f;                  // push return address
+  *(--rsp) = arg;                // push rdi, parameter for the function `f`
+  *(--rsp) = 0;                  // push rbx
+  *(--rsp) = 0;                  // push rbp
+  *(--rsp) = 0;                  // push r12
+  *(--rsp) = 0;                  // push r13
+  *(--rsp) = 0;                  // push r14
+  *(--rsp) = 0;                  // push r15
   da_append(&contexts, ((Context){
       .rsp = rsp,
       .stack_base = stack_base,
       }));
 }
 
-void counter(void *arg)
+size_t coroutine_id(void)
 {
-  // and restore the number from the pointer
- long int n = (long int)arg;
-  for (int i = 0; i < n; ++i) {
-    printf("[%zu] %d\n", contexts.current, i);
-    coroutine_yield();
-  }
+  return contexts.current;
 }
 
-int main()
+size_t coroutine_active(void)
 {
-  coroutine_init();
-  // notice you can store a number as a pointer
-  coroutine_go(&counter, (void*)5);
-  coroutine_go(&counter, (void*)10);
-
-  while (contexts.count > 1) coroutine_yield();
-  return 0;
+  return contexts.count;
 }

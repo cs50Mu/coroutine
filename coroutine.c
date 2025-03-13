@@ -57,6 +57,9 @@ void __attribute__((naked)) coroutine_yield(void)
 }
 void __attribute__((naked)) coroutine_restore_context(void *rsp)
 {
+  // when we uncomment the following line, `zig build` will complain:
+  // `non-ASM statement in naked function is not supported`. so we have
+  // to comment it for now, despite the warning: `unused variable`
   /* (void)rsp; */
   asm("movq %rdi, %rsp\n"
       "popq %r15\n"

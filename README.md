@@ -6,6 +6,20 @@ Learning resource: [Tsoding's coroutine serials](https://www.youtube.com/watch?v
 
 ## Quick Start
 
+assembly poc:
+
 ```console
-make -B
+make -B poc && ./poc
+```
+
+c example:
+
+```console
+make -B main && ./main
+```
+
+zig example:
+
+```console
+zig build run
 ```

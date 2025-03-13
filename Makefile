@@ -6,4 +6,4 @@ coroutine.o: coroutine.c
 
 # prove of concept of the coroutine idea in assembly
 poc: poc.asm
-	/home/linuxfish/bin/fasm poc.asm && ./poc
+	/home/linuxfish/bin/fasm poc.asm

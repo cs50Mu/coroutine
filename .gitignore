@@ -3,3 +3,5 @@ a.out
 main
 main_new
 poc
+.zig-cache
+zig-out

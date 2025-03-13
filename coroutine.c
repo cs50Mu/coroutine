@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdint.h>
@@ -58,7 +57,7 @@ void __attribute__((naked)) coroutine_yield(void)
 }
 void __attribute__((naked)) coroutine_restore_context(void *rsp)
 {
-  (void)rsp;
+  /* (void)rsp; */
   asm("movq %rdi, %rsp\n"
       "popq %r15\n"
       "popq %r14\n"

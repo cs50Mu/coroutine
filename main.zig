@@ -11,8 +11,6 @@ const coroId = coro.coroutine_id;
 
 pub fn main() void {
     coroInit();
-    // TODO: how to inline n?
-    // counter(&n);
 
     var n: usize = 10;
     coroGo(counter, &n);

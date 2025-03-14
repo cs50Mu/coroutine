@@ -95,10 +95,16 @@ void coroutine_finish(void)
   /* } */
   Context t = contexts.items[contexts.current];
   contexts.items[contexts.current] = contexts.items[contexts.count-1];
-  contexts.items[contexts.count-1] = t;
+  contexts.items[contexts.count-1] = t;  // remove the current item by
+                                         // swapping the current item
+                                         // with the last item and
+                                         // decrease the count
   contexts.count -= 1;
-  contexts.current %= contexts.count;  // ??
-
+  contexts.current %= contexts.count;  // recompute
+                                       // `contexts.current`. when
+                                       // `contexts.current` is the
+                                       // last item, we need this
+                                       // operation to make it right
   coroutine_restore_context(contexts.items[contexts.current].rsp);
 }
 
